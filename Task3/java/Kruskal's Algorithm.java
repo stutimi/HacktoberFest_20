@@ -1,4 +1,3 @@
- 
 import java.util.*; 
 import java.lang.*; 
 import java.io.*; 
@@ -8,44 +7,49 @@ class Graph
 	class Edge implements Comparable<Edge> 
 	{ 
 		int src, dest, weight;  
-		    public int compareTo(Edge compareEdge) 
-	  	      { 
-			          return this.weight-compareEdge.weight; 
-		         } 
+		@Override
+		public int compareTo(Edge compareEdge) 
+		{ 
+			return this.weight - compareEdge.weight; 
+		} 
 	}; 
-class subset 
+
+	class Subset 
 	{ 
 		int parent, rank; 
 	}; 
-  int V, E; 
-	Edge edge[]; 
+
+	int V, E; 
+	Edge[] edge; 
+
+	// Constructor
 	Graph(int v, int e) 
 	{ 
 		V = v; 
 		E = e; 
 		edge = new Edge[E]; 
-		for (int i=0; i<e; ++i) 
+		for (int i = 0; i < e; ++i) 
 			edge[i] = new Edge(); 
 	} 
 
-	int find(subset subsets[], int i) 
+	// Find with path compression
+	int find(Subset subsets[], int i) 
 	{ 
 		if (subsets[i].parent != i) 
 			subsets[i].parent = find(subsets, subsets[i].parent); 
-
 		return subsets[i].parent; 
 	} 
- 
-	void Union(subset subsets[], int x, int y) 
+
+	// Union by rank
+	void Union(Subset subsets[], int x, int y) 
 	{ 
 		int xroot = find(subsets, x); 
-		int yroot = find(subsets, y);  
-		 
+		int yroot = find(subsets, y); 
+
 		if (subsets[xroot].rank < subsets[yroot].rank) 
 			subsets[xroot].parent = yroot; 
 		else if (subsets[xroot].rank > subsets[yroot].rank) 
 			subsets[yroot].parent = xroot; 
-
 		else
 		{ 
 			subsets[yroot].parent = xroot; 
@@ -53,43 +57,44 @@ class subset
 		} 
 	} 
 
+	// Kruskal's MST
 	void KruskalMST() 
 	{ 
-		Edge result[] = new Edge[V]; 
-		int e = 0; // An index variable, used for result[] 
-		int i = 0; // An index variable, used for sorted edges 
-		for (i=0; i<V; ++i) 
-			result[i] = new Edge(); 
- 
-		Arrays.sort(edge); 
-		subset subsets[] = new subset[V]; 
-		for(i=0; i<V; ++i) 
-			subsets[i]=new subset(); 
+		Edge[] result = new Edge[V - 1]; // Store V-1 edges for the MST
+		int e = 0; // Index for result[]
+		int i = 0; // Index for sorted edges
+		
+		Arrays.sort(edge); // Sort edges by weight
+
+		Subset[] subsets = new Subset[V]; 
 		for (int v = 0; v < V; ++v) 
 		{ 
+			subsets[v] = new Subset(); 
 			subsets[v].parent = v; 
 			subsets[v].rank = 0; 
 		} 
-    i = 0; 
-    while (e < V - 1) 
-		{  
-			Edge next_edge = new Edge(); 
-			next_edge = edge[i++]; 
 
-			int x = find(subsets, next_edge.src); 
-			int y = find(subsets, next_edge.dest);  
+		// Iterate through edges until MST has V-1 edges
+		while (e < V - 1 && i < E) 
+		{ 
+			Edge nextEdge = edge[i++]; 
+			int x = find(subsets, nextEdge.src); 
+			int y = find(subsets, nextEdge.dest); 
+
 			if (x != y) 
 			{ 
-				result[e++] = next_edge; 
+				result[e++] = nextEdge; 
 				Union(subsets, x, y); 
 			} 
-	}  
-		System.out.println("Following are the edges in " + 
-									"the constructed MST"); 
+		} 
+
+		// Print the constructed MST
+		System.out.println("Following are the edges in the constructed MST"); 
 		for (i = 0; i < e; ++i) 
-			System.out.println(result[i].src+" -- " + 
-				result[i].dest+" == " + result[i].weight); 
-	}  
+			System.out.println(result[i].src + " -- " + result[i].dest + " == " + result[i].weight); 
+	} 
+
+	// Driver code
 	public static void main (String[] args) 
 	{ 
 		int V = 4;  
@@ -121,7 +126,7 @@ class subset
 		graph.edge[4].dest = 3; 
 		graph.edge[4].weight = 4; 
 
+		// Execute Kruskal's algorithm
 		graph.KruskalMST(); 
 	} 
 } 
-//This code is contributed by Aakash Hasija 
